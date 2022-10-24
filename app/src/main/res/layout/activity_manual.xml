@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ManualActivity">
+
+  <Button
+      android:id="@+id/backBtn"
+      android:layout_width="50dp"
+      android:layout_height="50dp"
+      android:layout_alignParentTop="true"
+      android:layout_alignParentLeft="true"
+      android:layout_marginTop="5dp"
+      android:layout_marginStart="5dp"
+      android:background="@drawable/return_btn"/>
+
+  <EditText
+      android:id="@+id/ingredientInput"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:ems="10"
+      android:inputType="text"
+      android:layout_centerHorizontal="true"
+      android:layout_centerVertical="true"
+      android:textAlignment="center"
+      android:hint="Madde İsmini Giriniz" />
+
+  <Button
+      android:id="@+id/checkBtn"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_below="@+id/ingredientInput"
+      android:layout_marginStart="20dp"
+      android:layout_marginEnd="20dp"
+      android:layout_marginTop="30dp"
+      android:text="Maddeyi Kontrol Et"
+      android:textAllCaps="false"
+      android:background="@drawable/button_back"
+      app:backgroundTint="@color/teal_200"
+      android:textStyle="bold"/>
+
+
+</RelativeLayout>
