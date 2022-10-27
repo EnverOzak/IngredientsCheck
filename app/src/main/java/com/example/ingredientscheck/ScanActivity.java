@@ -6,10 +6,14 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
+import android.content.res.XmlResourceParser;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.text.method.ScrollingMovementMethod;
@@ -25,6 +29,9 @@ import com.google.android.gms.vision.CameraSource;
 import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.text.TextBlock;
 import com.google.android.gms.vision.text.TextRecognizer;
+import com.google.android.material.chip.ChipGroup;
+
+import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -32,12 +39,56 @@ import java.util.Locale;
 public class ScanActivity extends AppCompatActivity {
 
     private SurfaceView surfaceView;
-    private TextView textView;
     private CameraSource cameraSource;
+    private ChipGroup chipGroup;
+    private TextView textView;
     private static final int PERMISSION = 100;
+    private int count = 0;
 
-    public static String[][] unhealthyIngredientsTr = {{"SODYUM NITRAT", "sodyum nitrat", "0"}, {"GIDA BOYASI", "gıda boyası", "0"}, {"TATLANDIRICI", "tatlandırıcı", "0"}, {"TRANS YAG", "trans yağ", "0"}, {"RENKLENDIRICI", "renklendirici", "0"}};
-    public static String[][] unhealthyIngredientsEn = {{"SODIUM NITRATE", "sodium nitrate", "0"}, {"FOOD COLORING", "food coloring", "0"}, {"SWEETENER", "sweetener", "0"}, {"TRANS FAT", "trans fat", "0"}, {"COLORANT", "colorant", "0"}};
+    public static String[][] unhealthyIngredientsTr = {
+            {"ASPARTAM", "aspartam", "0", "asdafas"},
+            {"E951", "e951", "0"},
+            {"ASESULFAM K", "asesülfam k", "0"},
+            {"E950", "e950", "0"},
+            {"MONOSODYUM GLUTAMAT", "monosodyum glutamat", "0"},
+            {"E621", "e621", "0"},
+            {"SAKKARIN", "sakkarin", "0"},
+            {"E954", "e954", "0"},
+            {"SUKRALOZ", "sukraloz", "0", "gadsad"},
+            {"E955", "e955", "0"},
+            {"MALTITOL", "maltitol", "0"},
+            {"E965", "e965", "0"},
+            {"KSILITOL", "ksilitol", "0"},
+            {"E967", "e967", "0"},
+            {"SPLENDA","splenda","0"},
+            {"SORBITOL","sorbitol","0"},
+            {"E927","e927","0"},
+            {"ERITRITOL","eritritol","0"},
+            {"E968","e968","0"}
+    };
+    public static String[][] unhealthyIngredientsEn = {
+            {"ASPARTAME", "aspartame", "0", "loalsd"},
+            {"E951", "e951", "0"},
+            {"ACESULFAME K", "acesulfame k", "0"},
+            {"E950", "e950", "0"},
+            {"MONOSODIUM GLUTAMATE", "monosodium glutamate", "0"},
+            {"E621", "e621", "0"},
+            {"SACCHARIN", "saccharin", "0"},
+            {"E954", "e954", "0"},
+            {"SUCRALOSE", "sucralose", "0", "gadsad"},
+            {"E955", "e955", "0"},
+            {"MALTITOL", "maltitol", "0"},
+            {"E965", "e965", "0"},
+            {"XYLITOL", "xylitol", "0"},
+            {"E967", "e967", "0"},
+            {"SPLENDA","splenda","0"},
+            {"SORBITOL","sorbitol","0"},
+            {"E927","e927","0"},
+            {"ERYTHRITOL","erythritol","0"},
+            {"E968","e968","0"}
+    };
+
+    private Button[] ingredientBtn = new Button[unhealthyIngredientsTr.length];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,21 +96,41 @@ public class ScanActivity extends AppCompatActivity {
         setContentView(R.layout.activity_scan);
 
         surfaceView = findViewById(R.id.camera);
+        chipGroup = findViewById(R.id.chipGroup);
         textView = findViewById(R.id.textView);
-        textView.setMovementMethod(new ScrollingMovementMethod());
 
         startCameraSource();
-
-        StringBuilder firstStringBuilder = new StringBuilder();
         boolean found = false;
 
         for(int i = 0; i < unhealthyIngredientsTr.length; i++)
         {
             if(unhealthyIngredientsTr[i][2].equals("1"))
             {
-                firstStringBuilder.append(unhealthyIngredientsTr[i][1]);
-                firstStringBuilder.append("\n");
+                surfaceView.setBackground(getDrawable(R.drawable.border));
+                ingredientBtn[count] = new Button(ScanActivity.this);
+                ingredientBtn[count].setText(unhealthyIngredientsTr[i][1]);
+                ingredientBtn[count].setBackgroundColor(Color.TRANSPARENT);
+                ingredientBtn[count].setAllCaps(false);
+                ingredientBtn[count].setPadding(10,10,10,10);
+                chipGroup.addView(ingredientBtn[count]);
+                int finalI = i;
                 found = true;
+                ingredientBtn[count].setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(ScanActivity.this);
+                        builder.setCancelable(true);
+                        builder.setTitle(unhealthyIngredientsTr[finalI][1]);
+                        builder.setMessage(unhealthyIngredientsTr[finalI][3]);
+                        builder.setNegativeButton("Tamam", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                dialogInterface.cancel();
+                            }
+                        });
+                        builder.show();
+                    }
+                });
             }
         }
 
@@ -67,22 +138,43 @@ public class ScanActivity extends AppCompatActivity {
         {
             if(unhealthyIngredientsEn[i][2].equals("1"))
             {
-                firstStringBuilder.append(unhealthyIngredientsEn[i][1]);
-                firstStringBuilder.append("\n");
+                surfaceView.setBackground(getDrawable(R.drawable.border));
+                ingredientBtn[count] = new Button(ScanActivity.this);
+                ingredientBtn[count].setText(unhealthyIngredientsEn[i][1]);
+                ingredientBtn[count].setBackgroundColor(Color.TRANSPARENT);
+                ingredientBtn[count].setAllCaps(false);
+                ingredientBtn[count].setPadding(10,10,10,10);
+                chipGroup.addView(ingredientBtn[count]);
+                int finalI = i;
                 found = true;
+                ingredientBtn[count].setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(ScanActivity.this);
+                        builder.setCancelable(true);
+                        builder.setTitle(unhealthyIngredientsEn[finalI][1]);
+                        builder.setMessage(unhealthyIngredientsEn[finalI][3]);
+                        builder.setNegativeButton("Tamam", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                dialogInterface.cancel();
+                            }
+                        });
+                        builder.show();
+                    }
+                });
             }
         }
 
         if(found) {
             if(cancer) {
-                firstStringBuilder.append("Yukarıdaki madde ya da maddeler rahatsızlığınızı tetikleyebilir");
-                textView.setText(firstStringBuilder.toString());
+                textView.setText("Aşağıdaki madde ya da maddeler rahatsızlığınızı tetikleyebilir\nBilgi almak istediğiniz maddenin üzerine tıklayabilirsiniz");
             }
             else {
-                firstStringBuilder.append("Yukarıdaki madde ya da maddeler bağırsak floranıza iyi gelmeyebilir");
-                textView.setText(firstStringBuilder.toString());
+                textView.setText("Aşağıdaki madde ya da maddeler bağırsak floranıza iyi gelmeyebilir\nBilgi almak istediğiniz maddenin üzerine tıklayabilirsiniz");
             }
         }
+
     }
 
     private void startCameraSource (){
@@ -133,7 +225,7 @@ public class ScanActivity extends AppCompatActivity {
 
                     if(items.size() != 0)
                     {
-                        textView.post(new Runnable() {
+                        chipGroup.post(new Runnable() {
                             @Override
                             public void run() {
                                 StringBuilder stringBuilder = new StringBuilder();
@@ -148,6 +240,7 @@ public class ScanActivity extends AppCompatActivity {
                                                 if(unhealthyIngredientsEn[j][2].equals("0")) {
                                                     found = true;
                                                     unhealthyIngredientsTr[j][2] = "1";
+                                                    surfaceView.setBackground(getDrawable(R.drawable.border));
                                                 }
                                             }
                                         }
@@ -159,6 +252,7 @@ public class ScanActivity extends AppCompatActivity {
                                                     if(unhealthyIngredientsTr[j][2].equals("0")) {
                                                         found = true;
                                                         unhealthyIngredientsEn[j][2] = "1";
+                                                        surfaceView.setBackground(getDrawable(R.drawable.border));
                                                     }
                                                 }
                                             }
@@ -166,13 +260,35 @@ public class ScanActivity extends AppCompatActivity {
                                     }
                                 }
 
+                                chipGroup.removeAllViewsInLayout();
+
                                 for(int i = 0; i < unhealthyIngredientsTr.length; i++)
                                 {
                                     if(unhealthyIngredientsTr[i][2].equals("1"))
                                     {
-                                        stringBuilder.append(unhealthyIngredientsTr[i][1]);
-                                        stringBuilder.append("\n");
-                                        found = true;
+                                        ingredientBtn[count] = new Button(ScanActivity.this);
+                                        ingredientBtn[count].setText(unhealthyIngredientsTr[i][1]);
+                                        ingredientBtn[count].setBackgroundColor(Color.TRANSPARENT);
+                                        ingredientBtn[count].setAllCaps(false);
+                                        ingredientBtn[count].setPadding(10,10,10,10);
+                                        chipGroup.addView(ingredientBtn[count]);
+                                        int finalI = i;
+                                        ingredientBtn[count].setOnClickListener(new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View view) {
+                                                AlertDialog.Builder builder = new AlertDialog.Builder(ScanActivity.this);
+                                                builder.setCancelable(true);
+                                                builder.setTitle(unhealthyIngredientsTr[finalI][1]);
+                                                builder.setMessage(unhealthyIngredientsTr[finalI][3]);
+                                                builder.setNegativeButton("Tamam", new DialogInterface.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                                        dialogInterface.cancel();
+                                                    }
+                                                });
+                                                builder.show();
+                                            }
+                                        });
                                     }
                                 }
 
@@ -180,19 +296,38 @@ public class ScanActivity extends AppCompatActivity {
                                 {
                                     if(unhealthyIngredientsEn[i][2].equals("1"))
                                     {
-                                        stringBuilder.append(unhealthyIngredientsEn[i][1]);
-                                        stringBuilder.append("\n");
-                                        found = true;
+                                        ingredientBtn[count] = new Button(ScanActivity.this);
+                                        ingredientBtn[count].setText(unhealthyIngredientsEn[i][1]);
+                                        ingredientBtn[count].setBackgroundColor(Color.TRANSPARENT);
+                                        ingredientBtn[count].setAllCaps(false);
+                                        ingredientBtn[count].setPadding(10,10,10,10);
+                                        chipGroup.addView(ingredientBtn[count]);
+                                        int finalI = i;
+                                        ingredientBtn[count].setOnClickListener(new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View view) {
+                                                AlertDialog.Builder builder = new AlertDialog.Builder(ScanActivity.this);
+                                                builder.setCancelable(true);
+                                                builder.setTitle(unhealthyIngredientsEn[finalI][1]);
+                                                builder.setMessage(unhealthyIngredientsEn[finalI][3]);
+                                                builder.setNegativeButton("Tamam", new DialogInterface.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                                        dialogInterface.cancel();
+                                                    }
+                                                });
+                                                builder.show();
+                                            }
+                                        });
                                     }
                                 }
 
                                 if(found) {
                                     if(cancer) {
-                                        stringBuilder.append("Yukarıdaki madde ya da maddeler rahatsızlığınızı tetikleyebilir");
-                                        textView.setText(stringBuilder.toString());
+                                        textView.setText("Aşağıdaki madde ya da maddeler rahatsızlığınızı tetikleyebilir\nBilgi almak istediğiniz maddenin üzerine tıklayabilirsiniz");
                                     }
                                     else {
-                                        stringBuilder.append("Yukarıdaki madde ya da maddeler bağırsak floranıza iyi gelmeyebilir");
+                                        stringBuilder.append("Aşağıdaki madde ya da maddeler bağırsak floranıza iyi gelmeyebilir\nBilgi almak istediğiniz maddenin üzerine tıklayabilirsiniz");
                                         textView.setText(stringBuilder.toString());
                                     }
                                 }
